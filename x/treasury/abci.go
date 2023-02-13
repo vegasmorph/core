@@ -18,6 +18,9 @@ func EndBlocker(ctx sdk.Context, k keeper.Keeper) {
 	// Burn all coins from the burn module account
 	k.BurnCoinsFromBurnAccount(ctx)
 
+	// Burn all coins from the burn no remint module account
+	k.BurnCoinsFromBurnNoRemintAccount(ctx)
+
 	// Check epoch last block
 	if !core.IsPeriodLastBlock(ctx, core.BlocksPerWeek) {
 		return

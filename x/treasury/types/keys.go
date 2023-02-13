@@ -22,6 +22,10 @@ const (
 // burn address = terra1sk06e3dyexuq4shw77y3dsv480xv42mq73anxu
 const BurnModuleName = "burn"
 
+// BurnNoRemintModuleName is special purpose module name to perform burn coins exempt from seigniorage
+const BurnNoRemintModuleName = "burnNoRemint"
+
+
 // Keys for treasury store
 // Items are stored with the following key: values
 //

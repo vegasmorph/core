@@ -18,3 +18,15 @@ func (k Keeper) BurnCoinsFromBurnAccount(ctx sdk.Context) {
 
 	return
 }
+// BurnCoinsFromBurnNoRemintAccount burn all coins from burn account
+func (k Keeper) BurnCoinsFromBurnNoRemintAccount(ctx sdk.Context) {
+	burnAddress := k.accountKeeper.GetModuleAddress(types.BurnNoRemintModuleName)
+	if coins := k.bankKeeper.GetAllBalances(ctx, burnAddress); !coins.IsZero() {
+		err := k.bankKeeper.BurnCoins(ctx, types.BurnNoRemintModuleName, coins)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	return
+}
