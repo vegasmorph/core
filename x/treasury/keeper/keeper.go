@@ -352,6 +352,41 @@ func (k Keeper) ClearTSLs(ctx sdk.Context) {
 	}
 }
 
+// GetBNR returns the total manually burned luna not to be reminted in the epoch
+func (k Keeper) GetBNR(ctx sdk.Context, epoch int64) sdk.Int {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.GetBNRKey(epoch))
+
+	ip := sdk.IntProto{}
+	if bz == nil {
+		ip.Int = sdk.ZeroInt()
+	} else {
+		k.cdc.MustUnmarshal(bz, &ip)
+	}
+
+	return ip.Int
+}
+
+// SetBNR stores the total manually burned luna not to be reminted for the epoch
+func (k Keeper) SetBNR(ctx sdk.Context, epoch int64, BNR sdk.Int) {
+	store := ctx.KVStore(k.storeKey)
+
+	bz := k.cdc.MustMarshal(&sdk.IntProto{Int: BNR})
+	store.Set(types.GetBNRKey(epoch), bz)
+}
+
+// ClearBNRs delete all the manually burned luna not to be reminted from the store
+func (k Keeper) ClearBNRs(ctx sdk.Context) {
+	store := ctx.KVStore(k.storeKey)
+
+	iter := sdk.KVStorePrefixIterator(store, types.BNRKey)
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		store.Delete(iter.Key())
+	}
+}
+
+
 func (k Keeper) GetBurnSplitRate(ctx sdk.Context) sdk.Dec {
 	params := k.GetParams(ctx)
 	return params.BurnTaxSplit

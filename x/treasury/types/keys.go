@@ -46,6 +46,8 @@ const BurnNoRemintModuleName = "burnNoRemint"
 // - 0x08<epoch_Bytes>: sdk.Int
 //
 // - 0x09: int64
+//
+// - 0x0A: <epoch_Bytes>: sdk.Int
 var (
 	// Keys for store prefixes
 	TaxRateKey              = []byte{0x01} // a key for a tax-rate
@@ -59,6 +61,7 @@ var (
 	TRKey  = []byte{0x06} // prefix for each key to a TR
 	SRKey  = []byte{0x07} // prefix for each key to a SR
 	TSLKey = []byte{0x08} // prefix for each key to a TSL
+	BNRKey = []byte{0x0A} // prefix for each key to a BNR
 )
 
 // GetTaxCapKey - stored by *denom*
@@ -79,6 +82,11 @@ func GetSRKey(epoch int64) []byte {
 // GetTSLKey - stored by *epoch*
 func GetTSLKey(epoch int64) []byte {
 	return GetSubkeyByEpoch(TSLKey, epoch)
+}
+
+// GetBNRKey - stored by *epoch*
+func GetBNRKey(epoch int64) []byte {
+	return GetSubkeyByEpoch(BNRKey, epoch)
 }
 
 // GetSubkeyByEpoch - stored by *epoch*
