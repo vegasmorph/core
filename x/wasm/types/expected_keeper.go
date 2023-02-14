@@ -5,11 +5,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+
+	abci "github.com/tendermint/tendermint/abci/types"
+
 	connectiontypes "github.com/cosmos/ibc-go/modules/core/03-connection/types"
 	channeltypes "github.com/cosmos/ibc-go/modules/core/04-channel/types"
 	ibcexported "github.com/cosmos/ibc-go/modules/core/exported"
 
-	abci "github.com/tendermint/tendermint/abci/types"
+	treasurytypes "github.com/classic-terra/core/x/treasury/types"
 )
 
 // AccountKeeper - expected account keeper
@@ -40,6 +43,7 @@ type TreasuryKeeper interface {
 	GetTaxRate(ctx sdk.Context) (taxRate sdk.Dec)
 	GetTaxCap(ctx sdk.Context, denom string) (taxCap sdk.Int)
 	GetBurnSplitRate(ctx sdk.Context) sdk.Dec
+	GetParams(ctx sdk.Context) (params treasurytypes.Params)
 }
 
 // GRPCQueryHandler defines a function type which handles ABCI Query requests

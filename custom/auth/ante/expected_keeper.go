@@ -2,7 +2,11 @@ package ante
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	distributiontypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+
+	treasurytypes "github.com/classic-terra/core/x/treasury/types"
 )
 
 // TreasuryKeeper for tax charging & recording
@@ -11,6 +15,7 @@ type TreasuryKeeper interface {
 	GetTaxRate(ctx sdk.Context) (taxRate sdk.Dec)
 	GetTaxCap(ctx sdk.Context, denom string) (taxCap sdk.Int)
 	GetBurnSplitRate(ctx sdk.Context) sdk.Dec
+	GetParams(ctx sdk.Context) (params treasurytypes.Params)
 }
 
 // OracleKeeper for feeder validation
@@ -27,4 +32,9 @@ type BankKeeper interface {
 type DistrKeeper interface {
 	FundCommunityPool(ctx sdk.Context, amount sdk.Coins, sender sdk.AccAddress) error
 	GetFeePool(ctx sdk.Context) distributiontypes.FeePool
+}
+
+// GovKeeper defines the interface needed from Governance related functions
+type GovKeeper interface {
+	GetDepositParams(ctx sdk.Context) govtypes.DepositParams
 }
