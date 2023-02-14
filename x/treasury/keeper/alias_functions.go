@@ -16,3 +16,8 @@ func (k Keeper) GetTreasuryModuleAccount(ctx sdk.Context) authtypes.ModuleAccoun
 func (k Keeper) GetBurnModuleAccount(ctx sdk.Context) authtypes.ModuleAccountI {
 	return k.accountKeeper.GetModuleAccount(ctx, types.BurnModuleName)
 }
+
+// GetBurnNoRemintModuleAccount returns burn ModuleAccount
+func (k Keeper) GetBurnNoRemintModuleAccount(ctx sdk.Context) authtypes.ModuleAccountI {
+	return k.accountKeeper.GetModuleAccount(ctx, types.BurnNoRemintModuleName)
+}

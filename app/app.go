@@ -189,6 +189,7 @@ var (
 	maccPerms = map[string][]string{
 		authtypes.FeeCollectorName:     nil, // just added to enable align fee
 		treasurytypes.BurnModuleName:   {authtypes.Burner},
+		treasurytypes.BurnNoRemintModuleName:   {authtypes.Burner},
 		minttypes.ModuleName:           {authtypes.Minter},
 		markettypes.ModuleName:         {authtypes.Minter, authtypes.Burner},
 		oracletypes.ModuleName:         nil,
@@ -204,6 +205,7 @@ var (
 	allowedReceivingModAcc = map[string]bool{
 		oracletypes.ModuleName:       true,
 		treasurytypes.BurnModuleName: true,
+		treasurytypes.BurnNoRemintModuleName: true,
 	}
 )
 

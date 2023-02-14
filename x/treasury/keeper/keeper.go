@@ -56,6 +56,11 @@ func NewKeeper(cdc codec.BinaryCodec, storeKey sdk.StoreKey,
 		panic(fmt.Sprintf("%s module account has not been set", types.BurnModuleName))
 	}
 
+	// ensure burn module account is set
+	if addr := accountKeeper.GetModuleAddress(types.BurnNoRemintModuleName); addr == nil {
+		panic(fmt.Sprintf("%s module account has not been set", types.BurnNoRemintModuleName))
+	}
+
 	// set KeyTable if it has not already been set
 	if !paramSpace.HasKeyTable() {
 		paramSpace = paramSpace.WithKeyTable(types.ParamKeyTable())
@@ -365,6 +370,18 @@ func (k Keeper) GetBNR(ctx sdk.Context, epoch int64) sdk.Int {
 	}
 
 	return ip.Int
+}
+
+// RecordEpochBNRProceeds adds no-remint burn tax proceeds that have been added this epoch
+func (k Keeper) RecordEpochBNRProceeds(ctx sdk.Context, epoch int64, delta sdk.Int) {
+	if delta == sdk.ZeroInt() {
+		return
+	}
+
+	proceeds := k.GetBNR(ctx, epoch)
+	proceeds = proceeds.Add(delta)
+
+	k.SetBNR(ctx, epoch, proceeds)
 }
 
 // SetBNR stores the total manually burned luna not to be reminted for the epoch
