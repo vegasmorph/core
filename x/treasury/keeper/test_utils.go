@@ -175,6 +175,7 @@ func CreateTestInput(t *testing.T) TestInput {
 		oracletypes.ModuleName:         nil,
 		types.ModuleName:               {authtypes.Burner, authtypes.Minter},
 		types.BurnModuleName:           {authtypes.Burner},
+		types.BurnNoRemintModuleName:   {authtypes.Burner},
 	}
 
 	paramsKeeper := paramskeeper.NewKeeper(appCodec, legacyAmino, keyParams, tKeyParams)
@@ -218,6 +219,7 @@ func CreateTestInput(t *testing.T) TestInput {
 	marketAcc := authtypes.NewEmptyModuleAccount(markettypes.ModuleName, authtypes.Burner, authtypes.Minter)
 	treasuryAcc := authtypes.NewEmptyModuleAccount(types.ModuleName, authtypes.Burner, authtypes.Minter)
 	burnAcc := authtypes.NewEmptyModuleAccount(types.BurnModuleName, authtypes.Burner)
+	burnNoRemintAcc := authtypes.NewEmptyModuleAccount(types.BurnNoRemintModuleName, authtypes.Burner)
 
 	// + 1 for burn account
 	bankKeeper.SendCoinsFromModuleToModule(ctx, faucetAccountName, stakingtypes.NotBondedPoolName, sdk.NewCoins(sdk.NewCoin(core.MicroLunaDenom, InitTokens.MulRaw(int64(len(Addrs)+1)))))
@@ -230,6 +232,7 @@ func CreateTestInput(t *testing.T) TestInput {
 	accountKeeper.SetModuleAccount(ctx, marketAcc)
 	accountKeeper.SetModuleAccount(ctx, treasuryAcc)
 	accountKeeper.SetModuleAccount(ctx, burnAcc)
+	accountKeeper.SetModuleAccount(ctx, burnNoRemintAcc)
 
 	for _, addr := range Addrs {
 		accountKeeper.SetAccount(ctx, authtypes.NewBaseAccountWithAddress(addr))
@@ -240,6 +243,10 @@ func CreateTestInput(t *testing.T) TestInput {
 	// to test burn module account
 	err := bankKeeper.SendCoinsFromModuleToModule(ctx, faucetAccountName, types.BurnModuleName, InitCoins)
 	require.NoError(t, err)
+
+	// to test burn no remint module account
+	err2 := bankKeeper.SendCoinsFromModuleToModule(ctx, faucetAccountName, types.BurnNoRemintModuleName, InitCoins)
+	require.NoError(t, err2)
 
 	oracleKeeper := oraclekeeper.NewKeeper(
 		appCodec,
