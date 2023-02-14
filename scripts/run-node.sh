@@ -5,6 +5,7 @@ pkill terrad
 
 BINARY=$1
 DENOM=$2
+INITIAL_HEIGHT=$3
 
 SED_BINARY=sed
 # check if this is OS X
@@ -25,10 +26,18 @@ if [ -z "$BINARY" ]; then
     BINARY=build/terrad
 fi
 
-# check DENOM is set. If not, set to uluna
+# check DENOM is set or empty. If not, set to uluna
 if [ -z "$DENOM" ]; then
     DENOM=uluna
 fi
+
+# check INITIAL_HEIGHT is set. If not, set to 1
+if [ -z "$INITIAL_HEIGHT" ]; then
+    INITIAL_HEIGHT=1
+fi
+
+# check DENOM is empty string. If not, set to uluna
+
 
 HOME=mytestnet
 CHAIN_ID="test"
@@ -40,7 +49,7 @@ KEY2="test2"
 # Function updates the config based on a jq argument as a string
 update_test_genesis () {
     # EX: update_test_genesis '.consensus_params["block"]["max_gas"]="100000000"'
-    cat $HOME/config/genesis.json | jq --arg DENOM "$2" "$1" > $HOME/config/tmp_genesis.json && mv $HOME/config/tmp_genesis.json $HOME/config/genesis.json
+    cat $HOME/config/genesis.json | jq --arg "$1" "$2" "$3" > $HOME/config/tmp_genesis.json && mv $HOME/config/tmp_genesis.json $HOME/config/genesis.json
 }
 
 $BINARY init --chain-id $CHAIN_ID moniker --home $HOME
@@ -54,11 +63,12 @@ $BINARY add-genesis-account $KEY "1000000000000${DENOM}" --keyring-backend $KEYR
 $BINARY add-genesis-account $KEY1 "1000000000000${DENOM}" --keyring-backend $KEYRING --home $HOME
 $BINARY add-genesis-account $KEY2 "1000000000000${DENOM}" --keyring-backend $KEYRING --home $HOME
 
-update_test_genesis '.app_state["gov"]["voting_params"]["voting_period"] = "50s"'
-update_test_genesis '.app_state["mint"]["params"]["mint_denom"]=$DENOM' $DENOM
-update_test_genesis '.app_state["gov"]["deposit_params"]["min_deposit"]=[{"denom": $DENOM,"amount": "1000000"}]' $DENOM
-update_test_genesis '.app_state["crisis"]["constant_fee"]={"denom": $DENOM,"amount": "1000"}' $DENOM
-update_test_genesis '.app_state["staking"]["params"]["bond_denom"]=$DENOM' $DENOM
+update_test_genesis INITIAL_HEIGHT $INITIAL_HEIGHT '.initial_height=$INITIAL_HEIGHT'
+update_test_genesis '' '' '.app_state["gov"]["voting_params"]["voting_period"] = "50s"'
+update_test_genesis DENOM $DENOM '.app_state["mint"]["params"]["mint_denom"]=$DENOM'
+update_test_genesis DENOM $DENOM '.app_state["gov"]["deposit_params"]["min_deposit"]=[{"denom": $DENOM,"amount": "1000000"}]'
+update_test_genesis DENOM $DENOM '.app_state["crisis"]["constant_fee"]={"denom": $DENOM,"amount": "1000"}'
+update_test_genesis DENOM $DENOM '.app_state["staking"]["params"]["bond_denom"]=$DENOM'
 
 # enable rest server and swagger
 $SED_BINARY -i '0,/enable = false/s//enable = true/' $HOME/config/app.toml
