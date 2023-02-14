@@ -5,7 +5,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil/testdata"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	"github.com/terra-money/core/custom/auth/ante"
+
+	"github.com/classic-terra/core/custom/auth/ante"
 )
 
 func (suite *AnteTestSuite) TestMinInitialDepositRatioDefault() {
@@ -51,10 +52,7 @@ func (suite *AnteTestSuite) TestMinInitialDepositRatioWithSufficientDeposit() {
 	suite.app.GovKeeper.SetDepositParams(suite.ctx, govparams)
 
 	// set initial deposit ratio to 0.2
-	params := suite.app.TreasuryKeeper.GetParams(suite.ctx)
-	params.MinInitialDepositRatio = sdk.NewDecWithPrec(2, 1)
-	suite.app.TreasuryKeeper.SetParams(suite.ctx, params)
-
+	suite.app.TreasuryKeeper.SetMinInitialDepositRatio(suite.ctx, sdk.NewDecWithPrec(2, 1))
 	// keys and addresses
 	priv1, _, addr1 := testdata.KeyTestPubAddr()
 	prop1 := govtypes.NewTextProposal("prop1", "prop1")
@@ -93,9 +91,7 @@ func (suite *AnteTestSuite) TestMinInitialDepositRatioWithInsufficientDeposit() 
 	suite.app.GovKeeper.SetDepositParams(suite.ctx, govparams)
 
 	// set initial deposit ratio to 0.2
-	params := suite.app.TreasuryKeeper.GetParams(suite.ctx)
-	params.MinInitialDepositRatio = sdk.NewDecWithPrec(2, 1)
-	suite.app.TreasuryKeeper.SetParams(suite.ctx, params)
+	suite.app.TreasuryKeeper.SetMinInitialDepositRatio(suite.ctx, sdk.NewDecWithPrec(2, 1))
 
 	// keys and addresses
 	priv1, _, addr1 := testdata.KeyTestPubAddr()

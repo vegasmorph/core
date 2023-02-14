@@ -48,6 +48,15 @@ func (k Keeper) WindowProbation(ctx sdk.Context) (res uint64) {
 	return
 }
 
+func (k Keeper) GetMinInitialDepositRatio(ctx sdk.Context) sdk.Dec {
+	params := k.GetParams(ctx)
+	return params.MinInitialDepositRatio
+}
+
+func (k Keeper) SetMinInitialDepositRatio(ctx sdk.Context, burnTaxSplit sdk.Dec) {
+	k.paramSpace.Set(ctx, types.KeyMinInitialDepositRatio, burnTaxSplit)
+}
+
 // GetParams returns the total set of treasury parameters.
 func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
 	k.paramSpace.GetParamSet(ctx, &params)

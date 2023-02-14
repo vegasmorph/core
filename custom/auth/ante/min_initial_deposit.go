@@ -6,7 +6,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
-	core "github.com/terra-money/core/types"
+
+	core "github.com/classic-terra/core/types"
 )
 
 // MinInitialDeposit Decorator will check Initial Deposits for MsgSubmitProposal
@@ -36,7 +37,7 @@ func HandleCheckMinInitialDeposit(ctx sdk.Context, msg sdk.Msg, govKeeper GovKee
 		return fmt.Errorf("could not dereference msg as MsgSubmitProposal")
 	}
 
-	minInitialDepositRatio := treasuryKeeper.GetParams(ctx).MinInitialDepositRatio
+	minInitialDepositRatio := treasuryKeeper.GetInitialDepositRatio(ctx)
 
 	minDeposit := govKeeper.GetDepositParams(ctx).MinDeposit
 	requiredAmount := sdk.NewDecFromInt(minDeposit.AmountOf(core.MicroLunaDenom)).Mul(minInitialDepositRatio).TruncateInt()

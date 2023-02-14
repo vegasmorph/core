@@ -60,22 +60,27 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	}
 
 	return sdk.ChainAnteDecorators(
-		cosmosante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
+		cosmosante.NewSetUpContextDecorator(),
+		// outermost AnteDecorator. SetUpContext must be called first
 		cosmosante.NewRejectExtensionOptionsDecorator(),
-		NewSpammingPreventionDecorator(options.OracleKeeper), // spamming prevention
-		NewTaxFeeDecorator(options.TreasuryKeeper),           // mempool gas fee validation & record tax proceeds
+		// spamming prevention
+		NewSpammingPreventionDecorator(options.OracleKeeper),
+		// mempool gas fee validation & record tax proceeds
+		NewTaxFeeDecorator(options.TreasuryKeeper),
 		cosmosante.NewValidateBasicDecorator(),
 		cosmosante.NewTxTimeoutHeightDecorator(),
 		cosmosante.NewValidateMemoDecorator(options.AccountKeeper),
 		cosmosante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
 		cosmosante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper),
-		NewBurnTaxFeeDecorator(options.AccountKeeper, options.TreasuryKeeper, options.BankKeeper, options.DistributionKeeper), // burn tax proceeds
-		cosmosante.NewSetPubKeyDecorator(options.AccountKeeper),                                                               // SetPubKeyDecorator must be called before all signature verification decorators
+		// burn tax proceeds
+		NewBurnTaxFeeDecorator(options.AccountKeeper, options.TreasuryKeeper, options.BankKeeper, options.DistributionKeeper),
+		NewMinInitialDepositDecorator(options.GovKeeper, options.TreasuryKeeper),
+		// SetPubKeyDecorator must be called before all signature verification decorators
+		cosmosante.NewSetPubKeyDecorator(options.AccountKeeper),
 		cosmosante.NewValidateSigCountDecorator(options.AccountKeeper),
 		cosmosante.NewSigGasConsumeDecorator(options.AccountKeeper, sigGasConsumer),
 		NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		cosmosante.NewIncrementSequenceDecorator(options.AccountKeeper),
 		ibcante.NewAnteDecorator(options.IBCChannelKeeper),
-		NewMinInitialDepositDecorator(options.GovKeeper, options.TreasuryKeeper),
 	), nil
 }
