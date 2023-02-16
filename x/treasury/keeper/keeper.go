@@ -243,10 +243,13 @@ func (k Keeper) UpdateEpochInitialIssuanceManualBurn(ctx sdk.Context, burned sdk
         epochIssuance := k.GetEpochInitialIssuance(ctx)
         lunaEpochIssuance := epochIssuance.AmountOf(core.MicroLunaDenom)
 	burnedAmount := burned.AmountOf(core.MicroLunaDenom)
-
 	for i, coin := range epochIssuance {
 	       if coin.Denom == core.MicroLunaDenom {
-	                epochIssuance[i].Amount = lunaEpochIssuance.Add(burnedAmount)
+			fmt.Println(fmt.Sprintf("BURN:BURNED AND RECORDED %s",burned))
+			fmt.Println(fmt.Sprintf("BURN:TOTAL SUPPLY BEFORE BURN %s",k.bankKeeper.GetSupply(ctx, core.MicroLunaDenom)))
+			fmt.Println(fmt.Sprintf("BURN:SEIGNIORAGE %s",k.PeekEpochSeigniorage(ctx)))
+			fmt.Println(fmt.Sprintf("BURN:EPOCH ISSUANCEE %s",lunaEpochIssuance))
+	                epochIssuance[i].Amount = lunaEpochIssuance.Sub(burnedAmount)
 			k.SetEpochInitialIssuance(ctx, epochIssuance.Sort())
 	        }
 	}
