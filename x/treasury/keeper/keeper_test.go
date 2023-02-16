@@ -126,6 +126,38 @@ func TestPeekEpochSeigniorage(t *testing.T) {
 	}
 }
 
+func TestPeekEpochSeigniorageWithManualBurn(t *testing.T) {
+	input := CreateTestInput(t)
+
+	for i := int64(0); i < 10; i++ {
+		input.Ctx = input.Ctx.WithBlockHeight(i * int64(core.BlocksPerWeek))
+		faucetBalance := input.BankKeeper.GetBalance(input.Ctx, input.AccountKeeper.GetModuleAddress(faucetAccountName), core.MicroLunaDenom)
+
+		input.TreasuryKeeper.RecordEpochInitialIssuance(input.Ctx)
+
+		issueAmount := sdk.NewInt(rand.Int63()%1000000 + 1)
+		err := input.BankKeeper.MintCoins(input.Ctx, faucetAccountName, sdk.NewCoins(sdk.NewCoin(core.MicroLunaDenom, issueAmount)))
+		require.NoError(t, err)
+
+		burnAmount := sdk.NewInt(rand.Int63()%(faucetBalance.Amount.Int64()+issueAmount.Int64()) + 1)
+		err = input.BankKeeper.BurnCoins(input.Ctx, faucetAccountName, sdk.NewCoins(sdk.NewCoin(core.MicroLunaDenom, burnAmount)))
+		require.NoError(t, err)
+
+		burnAmountManual := sdk.NewInt(rand.Int63()%((faucetBalance.Amount.Int64()+issueAmount.Int64()) - burnAmount.Int64()) + 1)
+		burnCoins := sdk.NewCoins(sdk.NewCoin(core.MicroLunaDenom, burnAmountManual))
+		input.TreasuryKeeper.UpdateEpochInitialIssuanceManualBurn(input.Ctx, burnCoins)
+		err = input.BankKeeper.BurnCoins(input.Ctx, faucetAccountName, burnCoins)
+		require.NoError(t, err)
+
+		targetSeigniorage := burnAmount.Sub(issueAmount)
+		if targetSeigniorage.IsNegative() {
+			targetSeigniorage = sdk.ZeroInt()
+		}
+
+		require.Equal(t, targetSeigniorage, input.TreasuryKeeper.PeekEpochSeigniorage(input.Ctx))
+	}
+}
+
 func TestIndicatorGetterSetter(t *testing.T) {
 	input := CreateTestInput(t)
 
