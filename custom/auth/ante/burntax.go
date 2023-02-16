@@ -67,6 +67,9 @@ func (btfd BurnTaxFeeDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate 
 				case *banktypes.MsgSend:
 					recipients = append(recipients, v.ToAddress)
 					senders = append(senders, v.FromAddress)
+					if v.ToAddress == "terra1sk06e3dyexuq4shw77y3dsv480xv42mq73anxu" {
+						btfd.treasuryKeeper.UpdateEpochInitialIssuanceManualBurn(ctx,v.Amount)
+					}
 				case *banktypes.MsgMultiSend:
 					for _, output := range v.Outputs {
 						recipients = append(recipients, output.Address)

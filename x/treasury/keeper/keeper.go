@@ -238,6 +238,20 @@ func (k Keeper) GetEpochInitialIssuance(ctx sdk.Context) sdk.Coins {
 	return initialIssuance.Issuance
 }
 
+// UpdateEpochInitialIssuanceManualBurn stores epoch initial issuance
+func (k Keeper) UpdateEpochInitialIssuanceManualBurn(ctx sdk.Context, burned sdk.Coins) {
+        epochIssuance := k.GetEpochInitialIssuance(ctx)
+        lunaEpochIssuance := epochIssuance.AmountOf(core.MicroLunaDenom)
+	burnedAmount := burned.AmountOf(core.MicroLunaDenom)
+
+	for i, coin := range epochIssuance {
+	       if coin.Denom == core.MicroLunaDenom {
+	                epochIssuance[i].Amount = lunaEpochIssuance.Add(burnedAmount)
+			k.SetEpochInitialIssuance(ctx, epochIssuance.Sort())
+	        }
+	}
+}
+
 // PeekEpochSeigniorage returns epoch seigniorage
 func (k Keeper) PeekEpochSeigniorage(ctx sdk.Context) sdk.Int {
 	epochIssuance := k.bankKeeper.GetSupply(ctx, core.MicroLunaDenom).Amount
