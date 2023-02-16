@@ -29,6 +29,8 @@ func EndBlocker(ctx sdk.Context, k keeper.Keeper) {
 	// Update luna issuance after finish all works
 	defer k.RecordEpochInitialIssuance(ctx)
 
+	defer k.SetBNR(ctx, sdk.ZeroInt())
+
 	// Compute & Update internal indicators for the current epoch
 	k.UpdateIndicators(ctx)
 

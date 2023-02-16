@@ -248,6 +248,10 @@ func (k Keeper) PeekEpochSeigniorage(ctx sdk.Context) sdk.Int {
 	preEpochIssuance := k.GetEpochInitialIssuance(ctx).AmountOf(core.MicroLunaDenom)
 	epochSeigniorage := preEpochIssuance.Sub(epochIssuance)
 
+	// Subtract the amount from the Burn No Remint Wallet
+	burnAmount := k.GetBNR(ctx)
+	epochSeigniorage = epochSeigniorage.Sub(burnAmount)
+
 	if epochSeigniorage.IsNegative() {
 		return sdk.ZeroInt()
 	}
@@ -358,9 +362,9 @@ func (k Keeper) ClearTSLs(ctx sdk.Context) {
 }
 
 // GetBNR returns the total manually burned luna not to be reminted in the epoch
-func (k Keeper) GetBNR(ctx sdk.Context, epoch int64) sdk.Int {
+func (k Keeper) GetBNR(ctx sdk.Context) sdk.Int {
 	store := ctx.KVStore(k.storeKey)
-	bz := store.Get(types.GetBNRKey(epoch))
+	bz := store.Get(types.GetBNRKey(core.MicroLunaDenom))
 
 	ip := sdk.IntProto{}
 	if bz == nil {
@@ -373,23 +377,23 @@ func (k Keeper) GetBNR(ctx sdk.Context, epoch int64) sdk.Int {
 }
 
 // RecordEpochBNRProceeds adds no-remint burn tax proceeds that have been added this epoch
-func (k Keeper) RecordEpochBNRProceeds(ctx sdk.Context, epoch int64, delta sdk.Int) {
+func (k Keeper) RecordEpochBNRProceeds(ctx sdk.Context, delta sdk.Int) {
 	if delta == sdk.ZeroInt() {
 		return
 	}
 
-	proceeds := k.GetBNR(ctx, epoch)
+	proceeds := k.GetBNR(ctx)
 	proceeds = proceeds.Add(delta)
 
-	k.SetBNR(ctx, epoch, proceeds)
+	k.SetBNR(ctx, proceeds)
 }
 
 // SetBNR stores the total manually burned luna not to be reminted for the epoch
-func (k Keeper) SetBNR(ctx sdk.Context, epoch int64, BNR sdk.Int) {
+func (k Keeper) SetBNR(ctx sdk.Context, BNR sdk.Int) {
 	store := ctx.KVStore(k.storeKey)
 
 	bz := k.cdc.MustMarshal(&sdk.IntProto{Int: BNR})
-	store.Set(types.GetBNRKey(epoch), bz)
+	store.Set(types.GetBNRKey(core.MicroLunaDenom), bz)
 }
 
 // ClearBNRs delete all the manually burned luna not to be reminted from the store
