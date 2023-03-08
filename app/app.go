@@ -96,7 +96,7 @@ import (
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
 
 	terraappparams "github.com/classic-terra/core/app/params"
-	v2 "github.com/classic-terra/core/app/upgrades/v2"
+	mincommission "github.com/classic-terra/core/app/upgrades/mincommission"
 
 	customauth "github.com/classic-terra/core/custom/auth"
 	customante "github.com/classic-terra/core/custom/auth/ante"
@@ -820,7 +820,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 
 func (app *TerraApp) setupUpgradeHandlers() {
 	app.UpgradeKeeper.SetUpgradeHandler(
-		v2.UpgradeName,
-		v2.CreateV2UpgradeHandler(app.mm, app.configurator),
+		mincommission.UpgradeName,
+		mincommission.CreateV2UpgradeHandler(&app.StakingKeeper),
 	)
 }
