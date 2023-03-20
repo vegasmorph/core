@@ -28,8 +28,8 @@ sed 's/minimum-gas-prices = "0uluna"/minimum-gas-prices = "'"$MINIMUM_GAS_PRICES
 
 # Needed to use awk to replace this multiline string.
 if [ "$ENABLE_LCD" = true ] ; then
-  sed -i '0,/enable = false/s//enable = true/' ~/.terra/config/app.toml
-
+  gawk -i inplace '{if (f==0 && /enable = false/) {sub(/false/, "true"); f=1}}1' ~/.terra/config/app.toml
+  gawk -i inplace '{if (f==0 && /swagger = false/) {sub(/false/, "true"); f=1}}1' ~/.terra/config/app.toml
 fi
 
 # config.toml updates
