@@ -8,19 +8,62 @@ MINIMUM_GAS_PRICES=${MINIMUM_GAS_PRICES-0.01133uluna,0.15uusd,0.104938usdr,169.7
 SNAPSHOT_NAME="${SNAPSHOT_NAME}"
 SNAPSHOT_BASE_URL="${SNAPSHOT_BASE_URL:-https://getsfo.quicksync.io}"
 
-# Moniker will be updated by entrypoint.
-terrad init --chain-id $CHAINID moniker
+# Terra net feature (must be managed only by terra-operator)
+IS_LOCALNET="${IS_LOCALNET:-false}"
+
+# continue terra node if .terra is already specified (in case of halt before)
+if [ -d "~/.terra" ]; then
+  terrad start $TERRAD_STARTUP_PARAMETERS &
+  wait
+  exit 0
+fi
+
+# if IS_LOCALNET is false, then init chain
+if [ "$IS_LOCALNET" = "false" ] ; then
+  # Moniker will be updated by entrypoint.
+  terrad init --chain-id $CHAINID $MONIKER
+else
+  # this is PVC mounted on k8s
+  # each node will have env HOSTNAME that tells which pod name it is in kube
+  NODE_POSITION=$(printenv HOSTNAME | rev | cut -d "-" -f 1 | rev)
+  cp -r ~/mytestnet/node$NODE_POSITION/.terra ~/.terra
+fi
 
 # Backup for templating
-mv ~/.terra/config/config.toml ~/config.toml
-mv ~/.terra/config/app.toml ~/app.toml
+cp ~/.terra/config/config.toml ~/config.toml
+cp ~/.terra/config/app.toml ~/app.toml
 
-if [ "$CHAINID" = "columbus-5" ] ; then wget -O ~/.terra/config/genesis.json https://columbus-genesis.s3.ap-northeast-1.amazonaws.com/columbus-5-genesis.json; fi; \
-if [ "$CHAINID" = "columbus-5" ] ; then wget -O ~/.terra/config/addrbook.json https://networks.mcontrol.ml/columbus/addrbook.json; fi; \
-if [ "$CHAINID" = "rebel-1" ]    ; then wget -O ~/.terra/config/genesis.json https://raw.githubusercontent.com/terra-rebels/classic-testnet/master/rebel-1/genesis.json; fi; \
-if [ "$CHAINID" = "rebel-1" ]    ; then wget -O ~/.terra/config/addrbook.json https://raw.githubusercontent.com/terra-rebels/classic-testnet/master/rebel-1/addrbook.json; fi; \
-if [ "$CHAINID" = "rebel-2" ]    ; then wget -O ~/.terra/config/genesis.json https://raw.githubusercontent.com/terra-rebels/classic-testnet/master/rebel-2/genesis.json; fi; \
-if [ "$CHAINID" = "rebel-2" ]    ; then wget -O ~/.terra/config/addrbook.json https://raw.githubusercontent.com/terra-rebels/classic-testnet/master/rebel-2/addrbook.json; fi;
+# auto config seed
+if [ "$IS_LOCALNET" = "true" ] ; then
+  gentxs=$(find ~/mytestnet/gentxs -name "*.json")
+  set -- $gentxs
+
+  seed_string=""
+  while [ -n "$1" ]; do
+    current=$(basename $1 | cut -d '.' -f 1 | sed 's/[^0-9]*//g')
+
+    if [ "$current" = "$NODE_POSITION" ] ; then
+      shift
+      continue
+    fi
+
+    seed=$(cat $1 | jq -r ".body.memo" | cut -d "@" -f 1)
+    # get ip of seed
+    base_hostname=$(printenv HOSTNAME | sed 's/-[0-9]*$//')
+    pod_name="$base_hostname-$current"
+    echo $pod_name
+    ip=$(dig +short $pod_name.$SERVICE_NAME.default.svc.cluster.local)
+    if [ ! -z "$ip" ]; then
+      seed_string="$seed@$ip:26656,$seed_string"
+    fi
+    shift
+  done
+
+  seed_string=${seed_string::-1}
+
+  # replace seed string
+  gawk -v new_peers="\"$seed_string\"" -i inplace '/^persistent_peers /{gsub(/"([^"]+)"/,new_peers)}1' ~/.terra/config/config.toml
+fi
 
 # First sed gets the app.toml moved into place.
 # app.toml updates
@@ -33,9 +76,20 @@ if [ "$ENABLE_LCD" = true ] ; then
 fi
 
 # config.toml updates
-
-sed 's/moniker = "moniker"/moniker = "'"$MONIKER"'"/g' ~/config.toml > ~/.terra/config/config.toml
 sed -i 's/laddr = "tcp:\/\/127.0.0.1:26657"/laddr = "tcp:\/\/0.0.0.0:26657"/g' ~/.terra/config/config.toml
+
+if [ "$IS_LOCALNET" = "true" ] ; then
+  terrad start $TERRAD_STARTUP_PARAMETERS &
+  wait
+  exit 0
+fi
+
+if [ "$CHAINID" = "columbus-5" ] ; then wget -O ~/.terra/config/genesis.json https://columbus-genesis.s3.ap-northeast-1.amazonaws.com/columbus-5-genesis.json; fi; \
+if [ "$CHAINID" = "columbus-5" ] ; then wget -O ~/.terra/config/addrbook.json https://networks.mcontrol.ml/columbus/addrbook.json; fi; \
+if [ "$CHAINID" = "rebel-1" ]    ; then wget -O ~/.terra/config/genesis.json https://raw.githubusercontent.com/terra-rebels/classic-testnet/master/rebel-1/genesis.json; fi; \
+if [ "$CHAINID" = "rebel-1" ]    ; then wget -O ~/.terra/config/addrbook.json https://raw.githubusercontent.com/terra-rebels/classic-testnet/master/rebel-1/addrbook.json; fi; \
+if [ "$CHAINID" = "rebel-2" ]    ; then wget -O ~/.terra/config/genesis.json https://raw.githubusercontent.com/terra-rebels/classic-testnet/master/rebel-2/genesis.json; fi; \
+if [ "$CHAINID" = "rebel-2" ]    ; then wget -O ~/.terra/config/addrbook.json https://raw.githubusercontent.com/terra-rebels/classic-testnet/master/rebel-2/addrbook.json; fi;
 
 if [ "$CHAINID" = "columbus-5" ] && [[ ! -z "$SNAPSHOT_NAME" ]] ; then 
   # Download the snapshot if data directory is empty.
@@ -58,7 +112,7 @@ if [ "$CHAINID" = "columbus-5" ] && [[ ! -z "$SNAPSHOT_NAME" ]] ; then
   fi
 fi
 
-# check if CHAINID is test
+# check if it is new network
 if [ "$NEW_NETWORK" = "true" ] ; then
   # add new gentx
   sh /test-node-setup.sh

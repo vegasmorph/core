@@ -30,5 +30,6 @@ COPY ./keys-add.sh /keys-add.sh
 COPY ./create-validator.sh /create-validator.sh
 COPY ./test-node-setup.sh /test-node-setup.sh
 COPY ./keys.json /keys.json
+COPY ./setup-localnet.sh /setup-localnet.sh
 
 CMD ["/entrypoint.sh"]
