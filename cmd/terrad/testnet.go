@@ -298,6 +298,12 @@ func initGenFiles(
 	clientCtx.Codec.MustUnmarshalJSON(appGenState[banktypes.ModuleName], &bankGenState)
 
 	bankGenState.Balances = genBalances
+	totalSupply := sdk.NewCoins()
+	for _, balance := range bankGenState.Balances {
+		totalSupply = totalSupply.Add(balance.Coins...)
+	}
+	bankGenState.Supply = totalSupply
+
 	appGenState[banktypes.ModuleName] = clientCtx.Codec.MustMarshalJSON(&bankGenState)
 
 	// set MinInitialDepositRatio

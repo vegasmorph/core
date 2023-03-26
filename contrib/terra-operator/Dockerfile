@@ -28,8 +28,9 @@ ENV VALIDATOR_MIN_SELF_DELEGATION ${validator_min_self_delegation}
 COPY ./entrypoint.sh /entrypoint.sh
 COPY ./keys-add.sh /keys-add.sh
 COPY ./create-validator.sh /create-validator.sh
-COPY ./test-node-setup.sh /test-node-setup.sh
-COPY ./keys.json /keys.json
+COPY ./genesis-build/test-node-setup.sh /test-node-setup.sh
+COPY ./genesis-build/keys.json /keys.json
+COPY ./genesis-build/add-gen-keys.sh /add-gen-keys.sh
 COPY ./setup-localnet.sh /setup-localnet.sh
 
 CMD ["/entrypoint.sh"]

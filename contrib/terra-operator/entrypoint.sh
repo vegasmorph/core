@@ -79,6 +79,10 @@ fi
 sed -i 's/laddr = "tcp:\/\/127.0.0.1:26657"/laddr = "tcp:\/\/0.0.0.0:26657"/g' ~/.terra/config/config.toml
 
 if [ "$IS_LOCALNET" = "true" ] ; then
+  # genesis handling
+  sh /add-gen-keys.sh
+  terrad validate-genesis --home ~/.terra
+
   terrad start $TERRAD_STARTUP_PARAMETERS &
   wait
   exit 0

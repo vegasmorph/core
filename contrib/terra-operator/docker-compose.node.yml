@@ -25,6 +25,8 @@ services:
        - VALIDATOR_FEES=120000uluna
        #Do not make 1 if you don’t know EXACTLY what you are doing 
        - VALIDATOR_AUTO_CONFIG=0
+       - IS_LOCALNET=true
+       - HOSTNAME=test-0
      restart: always
      ports:     
        - "1317:1317"
@@ -32,7 +34,7 @@ services:
        - "26656:26656"
        - "26657:26657"
      volumes:
-       - terra:/terra    
+       - ../../mytestnet:/terra/mytestnet
      networks:
        - terra-classic
      ulimits:
@@ -40,8 +42,6 @@ services:
         nofile:
           soft: 65535
           hard: 65535
-volumes:
-  terra:
 
 networks:
   terra-classic:
