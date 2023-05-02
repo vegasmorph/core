@@ -36,10 +36,10 @@ terrad tx staking create-validator --moniker test0 \
 --gas-adjustment 2.3 \
 -y
 
-sleep 10
+sleep 20
 
-# check if command `terrad q staking validator $(terrad keys show test0 -a --bech val --keyring-backend test)` success
-terrad q staking validator $(terrad keys show test0 -a --bech val --keyring-backend test --home $NODE_HOME) >/dev/null 2>&1
+# check if command `terrad q staking validator $(terrad keys show validator -a --bech val --keyring-backend test)` success
+terrad q staking validator $(terrad keys show validator -a --bech val --keyring-backend test --home $NODE_HOME) --node $(sh $SIMULATION_FOLDER/next_node.sh) >/dev/null 2>&1
 
 if [ $? -eq 0 ]; then
     echo "VALIDATOR CREATED SUCCESSFULLY"

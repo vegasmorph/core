@@ -7,19 +7,20 @@ export KEYRING_BACKEND=test
 export CHAIN_ID=${CHAIN_ID:-localterra}
 
 echo $CHAIN_ID
+echo $NODE_HOME
 
 if [ ! -d "$NODE_HOME" ]; then
     terrad init moniker --chain-id $CHAIN_ID --home $NODE_HOME
 fi
 
 # initialize keys
-for i in $(seq 0 3); do
-    # delete all keys
-    keys=$(terrad keys list -n --keyring-backend $KEYRING_BACKEND --home $NODE_HOME)
-    for key in $keys; do
-        echo "y" | terrad keys delete $key --keyring-backend $KEYRING_BACKEND --home $NODE_HOME
-    done
+# delete all keys
+keys=$(terrad keys list -n --keyring-backend $KEYRING_BACKEND --home $NODE_HOME)
+for key in $keys; do
+    echo "y" | terrad keys delete $key --keyring-backend $KEYRING_BACKEND --home $NODE_HOME
+done
 
+for i in $(seq 0 3); do
     key=$(jq ".keys[$i] | tostring" $SIMULATION_FOLDER/network/$CHAIN_ID/keys.json )
     keyname=$(echo $key | jq -r 'fromjson | ."keyring-keyname"')
     mnemonic=$(echo $key | jq -r 'fromjson | .mnemonic')
@@ -51,7 +52,7 @@ if [ "$CHAIN_ID" = "localterra" ]; then
 fi
 
 # tx_send
-sh $SIMULATION_FOLDER/tx_send.sh
+# sh $SIMULATION_FOLDER/tx_send.sh
 
 echo "DONE TX SEND SIMULATION (1/5)"
 
@@ -61,7 +62,7 @@ sh $SIMULATION_FOLDER/create-validator.sh
 echo "DONE CREATE VALIDATOR SIMULATION (2/5)"
 
 # delegate
-sh $SIMULATION_FOLDER/delegate.sh
+# sh $SIMULATION_FOLDER/delegate.sh
 
 echo "DONE DELEGATION SIMULATION (3/5)"
 
